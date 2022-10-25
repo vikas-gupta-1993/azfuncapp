@@ -5,7 +5,6 @@ param($Request, $TriggerMetadata)
 
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
-
 $payloadUS=@{
     login='Super manager'
     password='Wyde456Web'
@@ -56,13 +55,18 @@ $envs = @{
 
 $scriptBlock={
     param($url,$payload)
-    $result = Invoke-RestMethod -Uri $url -method post -Body $payload -ContentType 'application/json'
+    try {
+        $result = Invoke-RestMethod -Uri $url -method post -Body $payload -ContentType 'application/json'
+    } catch {
+        if($_.ErrorDetails.Message) {
+            return $_.ErrorDetails.Message
+        } else {
+            return Write-Host $_
+        }
+    }
     if($result.access_token) {
         write-host "received access token"
         return $result
-    } else {
-        write-host "Did not receive access token"
-        throw "wynauth for $url failed"
     }
 }
 
@@ -105,21 +109,20 @@ if ($envstatus) {
     foreach($job in $jobs){
         $joboutput = $job | Receive-Job
         $jobname = $job.Name
-        if($job.State -eq "Completed"){
-            $token = $joboutput.access_token
+        write-host "joboutput is: $joboutput"
+        $token = $joboutput.access_token
+        if($token) {
             write-host "call was successful"
             $apioutput.Add($jobname, @{
                 status = "Env is Up"
                 output = "Bearer token Received: $token"
             })
-        }
-        if($job.State -eq "Failed") {
-            $jobError = $job.ChildJobs[0].Error
-            write-host "Error is: $jobError"
+        } else {
+            write-host "wynauth call failed"
             $apioutput.Add($jobname, @{
                 status = "Env is Down"
-                Error = $jobError
-            })
+                output = $joboutput
+            })            
         }
     }
     # Test andividual job locally:
