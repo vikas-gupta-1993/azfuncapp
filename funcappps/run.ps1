@@ -9,6 +9,10 @@ $payloadUS=@{
     login='Super manager'
     password='Wyde456Web'
 }  |  ConvertTo-Json
+$payloadUSnoPass=@{
+    login='Super manager'
+    password=''
+}  |  ConvertTo-Json
 $payloadFR=@{
     login='Super gestionnaire'
     password='Wyde456Web'
@@ -22,6 +26,10 @@ $envs = @{
     atfr = @{
         url = "https://atfr-front.francecentral.cloudapp.azure.com/restapi/api/rest/wynauth"
         payload = $payloadFR
+    }
+    accept1 = @{
+        url = "https://wynaks-acpt1.wyde-azure.com/restapi/api/rest/wynauth"
+        payload = $payloadUSnoPass
     }
     accept3 = @{
         url = "https://accept3-front.francecentral.cloudapp.azure.com/restapi/api/rest/wynauth"
