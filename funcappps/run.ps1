@@ -78,6 +78,8 @@ $scriptBlock={
     }
 }
 
+$body = "This HTTP triggered function executed successfully. Pass the name of ResourceGroup to see VM status."
+
 # Interact with query parameters or the body of the request.
 $name = $Request.Query.Name
 if (-not $name) {
@@ -94,7 +96,10 @@ if (-not $envstatus) {
     $envstatus = $Request.Body.envstatus
 }
 
-$body = "This HTTP triggered function executed successfully. Pass the name of ResourceGroup to see VM status."
+$envTarget = $Request.Query.envTarget
+if (-not $envTarget) {
+    $envTarget = $Request.Body.envTarget
+}
 
 if ($name) {
     $body = "Hello, $name. This HTTP triggered function executed successfully."
@@ -103,17 +108,11 @@ if ($rg) {
     $statuses = Get-AzVm -ResourceGroupName $rg -status
     $body = $statuses | Select-Object Name,powerstate
 }
-if ($envstatus) {
-    foreach($env in $envs.Keys){
-        $envname = $envs[$env]
-        write-host "Calling wynauth api on: $env"
-        Start-ThreadJob -name $env -ScriptBlock $scriptBlock -ArgumentList $envname.url,$envname.payload
-    }
-    $apioutput = @{}
-    get-job | wait-job
 
-    $jobs = Get-Job
-
+function handle-JobOutput {
+    param (
+        $jobs        
+    )
     foreach($job in $jobs){
         $joboutput = $job | Receive-Job
         $jobname = $job.Name
@@ -138,7 +137,35 @@ if ($envstatus) {
     $output = $apioutput | ConvertTo-Json
     Write-Host $output
     get-job | Remove-Job
-    $body = $output
+    return $output
+}
+
+if ($envstatus -and !($envTarget)) {
+    foreach($env in $envs.Keys){
+        $envname = $envs[$env]
+        write-host "Calling wynauth api on: $env"
+        Start-ThreadJob -name $env -ScriptBlock $scriptBlock -ArgumentList $envname.url,$envname.payload
+    }
+    $apioutput = @{}
+    get-job | wait-job
+
+    $jobs = Get-Job
+    $body = handle-JobOutput -jobs $jobs
+}
+
+if ($envstatus -and $envTarget) {
+    foreach($env in $envs.Keys){
+        if($envTarget -eq $env) {
+        $envname = $envs[$env]
+        write-host "Calling wynauth api on: $env"
+        Start-ThreadJob -name $env -ScriptBlock $scriptBlock -ArgumentList $envname.url,$envname.payload
+        }
+    }
+    $apioutput = @{}
+    get-job | wait-job
+
+    $jobs = Get-Job
+    $body = handle-JobOutput -jobs $jobs
 }
 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
