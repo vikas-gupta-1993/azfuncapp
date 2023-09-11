@@ -59,6 +59,22 @@ $envs = @{
         url = "https://training-front.centralindia.cloudapp.azure.com/restapi/api/rest/wynauth"
         payload = $payloadUS
     }
+    accept60a = @{
+        url = "https://accept60a-front.centralus.cloudapp.azure.com/restapi/api/rest/wynauth"
+        payload = $payloadUSnoPass
+    }
+    MercerUAT = @{
+        url = "https://uat.mercervb.com/lspmw/bearerToken"
+        payload = $payloadUS
+    }
+    MercerPreProd = @{
+        url = "https://preprod.mercervb.com/lspmw/bearerToken"
+        payload = $payloadUS
+    }
+    MercerProd = @{
+        url = "https://mercervb.com/lspmw/bearerToken"
+        payload = $payloadUS
+    }
 }
 
 $scriptBlock={
