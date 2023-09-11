@@ -88,10 +88,7 @@ $scriptBlock={
             return Write-Host $_
         }
     }
-    if($result.access_token) {
-        write-host "received access token"
-        return $result
-    }
+    return $result
 }
 
 $body = "This HTTP triggered function executed successfully. Pass the name of ResourceGroup to see VM status."
@@ -132,14 +129,27 @@ function handle-JobOutput {
     foreach($job in $jobs){
         $joboutput = $job | Receive-Job
         $jobname = $job.Name
-        write-host "joboutput is: $joboutput"
-        $token = $joboutput.access_token
+        $token=$null
+        write-host "joboutput from $jobname is: $joboutput"
+        if($joboutput.access_token){
+            $token = $joboutput.access_token
+        }
+        if($joboutput._Result.access_token){
+            $token = $joboutput._Result.access_token
+        }
         if($token) {
             write-host "call was successful"
-            $apioutput.Add($jobname, @{
-                status = "Env is Up"
-                output = "Bearer token Received: $token"
-            })
+            if($Jobname -like "Mercer*"){
+                $apioutput.Add($jobname, @{
+                    status = "Env is Up"
+                    output = "Bearer token Received: *****"
+                })
+            } else {
+                $apioutput.Add($jobname, @{
+                    status = "Env is Up"
+                    output = "Bearer token Received: $token"
+                })
+            }            
         } else {
             write-host "wynauth call failed"
             $apioutput.Add($jobname, @{
