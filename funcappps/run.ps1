@@ -61,7 +61,7 @@ $envs = @{
     }
     accept60a = @{
         url = "https://accept60a-front.centralus.cloudapp.azure.com/restapi/api/rest/wynauth"
-        payload = $payloadUSnoPass
+        payload = $payloadUS
     }
     MercerUAT = @{
         url = "https://uat.mercervb.com/lspmw/bearerToken"
