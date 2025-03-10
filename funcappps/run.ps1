@@ -17,6 +17,10 @@ $payloadFR=@{
     login='Super gestionnaire'
     password='Wyde456Web'
 }  |  ConvertTo-Json
+$payloadUS_MercerProd=@{
+    login='Super manager'
+    password='fwegfg567fsdgdg45'
+}  |  ConvertTo-Json
 
 $envs = @{
     atus = @{
@@ -69,11 +73,11 @@ $envs = @{
     }
     MercerPreProd = @{
         url = "https://preprod.mercervb.com/lspmw/bearerToken"
-        payload = $payloadUS
+        payload = $payloadUS_MercerProd
     }
     MercerProd = @{
         url = "https://mercervb.com/lspmw/bearerToken"
-        payload = $payloadUS
+        payload = $payloadUS_MercerProd
     }
 }
 
